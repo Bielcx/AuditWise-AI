@@ -1,3 +1,4 @@
+import rateLimit from 'express-rate-limit';
 const express = require('express');
 const multer = require('multer');
 const cors = require('cors');
@@ -32,8 +33,20 @@ app.post('/validar-sinistro', upload.array('arquivos', 5), async (req, res) => {
         // Instancia o modelo Gemini 3 Flash
         const model = genAI.getGenerativeModel(
         { model: "gemini-3-flash-preview" },
-        { apiVersion: "v1beta" }
+        { apiVersion: "v1beta" },
+        {generationConfig: {
+            temperature: 0, // Essencial para auditoria
+            responseMimeType: "application/json", // Força o retorno em JSON
+        }}
         );
+
+        const limiter = rateLimit({
+        windowMs: 15 * 60 * 1000, // 15 minutos
+        max: 20, // limite de 20 requisições por IP
+        message: "Muitas solicitações vindas deste IP, tente novamente após 15 minutos."
+        });
+
+        app.use("/api/analyze", limiter);
 
         // Converte todos os ficheiros para o formato que a IA entende
         const imageParts = req.files.map(file => ({
