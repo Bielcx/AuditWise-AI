@@ -1,5 +1,5 @@
-import rateLimit from 'express-rate-limit';
 const express = require('express');
+const rateLimit = require('express-rate-limit');
 const multer = require('multer');
 const cors = require('cors');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
@@ -31,22 +31,19 @@ app.post('/validar-sinistro', upload.array('arquivos', 5), async (req, res) => {
         console.log(`Recebidos ${req.files.length} ficheiros para análise.`);
 
         // Instancia o modelo Gemini 3 Flash
+         // Instancia o modelo Gemini 3 Flash
         const model = genAI.getGenerativeModel(
         { model: "gemini-3-flash-preview" },
-        { apiVersion: "v1beta" },
-        {generationConfig: {
-            temperature: 0, // Essencial para auditoria
-            responseMimeType: "application/json", // Força o retorno em JSON
-        }}
+        { apiVersion: "v1beta" }
         );
 
         const limiter = rateLimit({
         windowMs: 15 * 60 * 1000, // 15 minutos
         max: 20, // limite de 20 requisições por IP
         message: "Muitas solicitações vindas deste IP, tente novamente após 15 minutos."
-        });
+            });
 
-        app.use("/api/analyze", limiter);
+            app.use("/api/analyze", limiter);
 
         // Converte todos os ficheiros para o formato que a IA entende
         const imageParts = req.files.map(file => ({
@@ -58,29 +55,38 @@ app.post('/validar-sinistro', upload.array('arquivos', 5), async (req, res) => {
 
         // Super Prompt de Auditoria e Cruzamento de Dados
         const prompt = `
-            Você é um auditor jurídico rigoroso. Sua função é REPROVAR documentos, 
-            a menos que você tenha certeza absoluta de que estão corretos.
+            Você é um Auditor de Sinistros Sênior da Suhai Seguradora. Sua missão é validar um kit de documentos de terceiros com tolerância zero para campos obrigatórios vazios.
 
-            REGRA CRÍTICA: Se um campo obrigatório estiver em branco, contiver apenas 
-            traços (___), apenas espaços, ou se você não conseguir ler o conteúdo com 
-            clareza, classifique como VAZIO e REPROVE. NUNCA infira ou suponha o valor 
-            de um campo que não está claramente preenchido.
+            REGRAS DE OURO PARA VALIDAÇÃO:
+            1. TITULARIDADE: O nome no CRLV/DUT deve ser EXATAMENTE igual à CNH, ao Formulário de Indenização e ao Termo de Acordo.
+            2. SINISTRO: O número do sinistro deve ser idêntico em todos os formulários.
+            3. REGRA DE ASSINATURA POR VALOR (CRÍTICO):
+            - Até R$ 10.000,00: Aceitar assinatura a punho (manuscrita).
+            - Entre R$ 10.000,01 e R$ 20.000,00: Obrigatório assinatura digital GOV.BR.
+            - Acima de R$ 20.000,00: Obrigatório reconhecimento de firma POR AUTENTICIDADE (selo de cartório).
 
-            Analise os seguintes campos no Termo de Acordo:
-            - Cláusula 2: Placa do veículo do Terceiro → deve estar preenchida com 
-            formato XXX0000 ou XXX0X00. Se contiver apenas traços ou estiver em 
-            branco: REPROVAR.
+            4. INTEGRIDADE E CAMPOS EM BRANCO (ESTRITA):
+            - Localize a Cláusula 2 do Termo de Acordo ("veículo do Terceiro... placa ________").
+            - Se após as palavras "placa", "chassi", "valor de R$" ou "Favorecido" houver apenas a linha tracejada, espaço vazio ou sublinhados, gere status PENDENTE.
+            - O campo "placa" na Cláusula 2 é obrigatório; se não houver texto manuscrito ou digitado sobre a linha, reprove imediatamente.
 
-            Retorne SOMENTE um JSON válido com este schema:
+            PENSAMENTO LÓGICO:
+            Antes de gerar o JSON, verifique: "Eu consigo ler uma placa escrita no Termo?". Se a resposta for "não" ou "apenas vejo a linha tracejada", o checklist de integridade falhou.
+
+            JSON de Saída:
             {
-            "aprovado": boolean,
-            "motivos_reprovacao": string[],
-            "campos_auditados": {
-                "nome_cnh": { "valor": string | null, "status": "preenchido" | "vazio" | "ilegivel" },
-                "placa_crlv": { ... },
-                "placa_termo_clausula2": { ... }
+            "status_geral": "APROVADO" ou "PENDENTE",
+            "valor_indenizacao": number,
+            "parecer_tecnico": "Explicação detalhada. Se houver campo vazio, especifique qual (ex: Placa ausente no Termo).",
+            "dados_extraidos": { "favorecido": "", "proprietario_crlv": "", "numero_sinistro": "" },
+            "checklist": {
+                "match_titularidade": boolean,
+                "sinistro_consistente": boolean,
+                "assinatura_conforme_valor": boolean,
+                "preenchimento_integral": boolean
             }
             }
+            Analise os documentos anexados e retorne apenas o JSON.
         `;
 
         // Chama a IA enviando o prompt e a lista de documentos
