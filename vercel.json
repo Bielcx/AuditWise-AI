@@ -1,13 +1,19 @@
 {
   "version": 2,
-  "rewrites": [
+  "builds": [
     {
-      "source": "/api/(.*)",
-      "destination": "/index.js"
+      "src": "index.js",
+      "use": "@vercel/node"
     },
     {
-      "source": "/(.*)",
-      "destination": "/sinistro-client/build/$1"
+      "src": "sinistro-client/package.json",
+      "use": "@vercel/static-build",
+      "config": { "distDir": "build" }
     }
+  ],
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/index.js" },
+    { "source": "/(.*)", "destination": "/sinistro-client/build/$1" },
+    { "source": "/(.*)", "destination": "/sinistro-client/build/index.html" }
   ]
 }
