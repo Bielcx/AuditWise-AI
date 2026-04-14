@@ -9,7 +9,7 @@ import './App.css';
 const api = axios.create({
   baseURL: process.env.NODE_ENV === 'production' 
     ? '/api' 
-    : 'http://localhost:3001'
+    : 'http://localhost:3000/api' // Note que o vercel dev usa a porta 3000 para ambos
 });
 
 function App() {
@@ -73,7 +73,7 @@ function App() {
     arquivos.forEach(f => formData.append('arquivos', f));
 
     try {
-      const response = await api.post('/validar-sinistro', formData);
+     const response = await api.post('/validar', formData);
       setResultado(response.data);
       setHistorico(prev => [response.data, ...prev].slice(0, 10));
     } catch (err) {

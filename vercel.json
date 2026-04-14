@@ -1,15 +1,7 @@
 {
   "version": 2,
-  "builds": [
-    { "src": "index.js", "use": "@vercel/node" },
-    { 
-      "src": "sinistro-client/package.json", 
-      "use": "@vercel/static-build",
-      "config": { "distDir": "build" } 
-    }
-  ],
   "rewrites": [
-    { "source": "/api/(.*)", "destination": "/index.js" },
-    { "source": "/(.*)", "destination": "/sinistro-client/build/index.html" }
+    { "source": "/api/(.*)", "destination": "/api/validar.js" },
+    { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
