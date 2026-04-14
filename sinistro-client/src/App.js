@@ -4,6 +4,14 @@ import { jsPDF } from "jspdf";
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, Tooltip } from 'recharts';
 import './App.css';
 
+// Configuração da API: Se estiver em produção, usa caminho relativo '/api'. 
+// Se estiver local, usa o seu servidor Node na porta 3001.
+const api = axios.create({
+  baseURL: process.env.NODE_ENV === 'production' 
+    ? '/api' 
+    : 'http://localhost:3001'
+});
+
 function App() {
   const [arquivos, setArquivos] = useState([]);
   const [resultado, setResultado] = useState(null);
@@ -65,7 +73,7 @@ function App() {
     arquivos.forEach(f => formData.append('arquivos', f));
 
     try {
-      const response = await axios.post('http://localhost:3001/validar-sinistro', formData);
+      const response = await api.post('/validar-sinistro', formData);
       setResultado(response.data);
       setHistorico(prev => [response.data, ...prev].slice(0, 10));
     } catch (err) {

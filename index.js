@@ -6,7 +6,7 @@ const { GoogleGenerativeAI } = require('@google/generative-ai');
 require('dotenv').config();
 
 const app = express();
-const port = 3001;
+const PORT = process.env.PORT || 3001;
 
 // Configurações de Middleware
 app.use(cors());
@@ -110,6 +110,6 @@ app.post('/validar-sinistro', upload.array('arquivos', 5), async (req, res) => {
     }
 });
 
-app.listen(port, () => {
-    console.log(`🚀 API de Auditoria Suhai rodando em http://localhost:${port}`);
+app.listen(PORT, () => {
+    console.log(`Servidor rodando na porta ${PORT}`);
 });
