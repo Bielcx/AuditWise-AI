@@ -22,7 +22,7 @@ const upload = multer({
 // Inicialização da Google Generative AI
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-app.post('/validar-sinistro', upload.array('arquivos', 5), async (req, res) => {
+app.post('/api/validar', upload.array('arquivos', 5), async (req, res) => {
     try {
         if (!req.files || req.files.length === 0) {
             return res.status(400).json({ error: 'Nenhum ficheiro foi enviado.' });
@@ -37,13 +37,13 @@ app.post('/validar-sinistro', upload.array('arquivos', 5), async (req, res) => {
         { apiVersion: "v1beta" }
         );
 
+        // ANTES do app.post(...)
         const limiter = rateLimit({
-        windowMs: 15 * 60 * 1000, // 15 minutos
-        max: 20, // limite de 20 requisições por IP
-        message: "Muitas solicitações vindas deste IP, tente novamente após 15 minutos."
-            });
-
-            app.use("/api/analyze", limiter);
+        windowMs: 15 * 60 * 1000,
+        max: 20,
+        message: "Muitas solicitações..."
+        });
+        app.use("/api/validar", limiter); // aplica na rota correta
 
         // Converte todos os ficheiros para o formato que a IA entende
         const imageParts = req.files.map(file => ({

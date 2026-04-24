@@ -9,7 +9,7 @@ import './App.css';
 const api = axios.create({
   baseURL: process.env.NODE_ENV === 'production' 
     ? '/api' 
-    : 'http://localhost:3000/api' // Note que o vercel dev usa a porta 3000 para ambos
+    : 'http://localhost:3001/api' // Note que o vercel dev usa a porta 3000 para ambos
 });
 
 function App() {
