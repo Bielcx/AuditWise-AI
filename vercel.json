@@ -2,10 +2,17 @@
   "version": 2,
   "builds": [
     { "src": "api/validar.js", "use": "@vercel/node" },
+    { "src": "api/cron-cobrancas.js", "use": "@vercel/node" },
     { "src": "package.json", "use": "@vercel/static-build", "config": { "distDir": "build" } }
   ],
   "routes": [
-    { "src": "/api/(.*)", "dest": "api/validar.js" },
+    { "src": "/api/(.*)", "dest": "api/$1" },
     { "src": "/(.*)", "dest": "/$1" }
+  ],
+  "crons": [
+    {
+      "path": "/api/cron-cobrancas",
+      "schedule": "0 12 * * *"
+    }
   ]
 }

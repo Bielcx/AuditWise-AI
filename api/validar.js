@@ -3,7 +3,9 @@ const rateLimit = require('express-rate-limit');
 const multer = require('multer');
 const cors = require('cors');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
+const { createClient } = require('@supabase/supabase-js');
 require('dotenv').config();
+require('./cobrancas'); // inicia o agendador de cobranças
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -12,15 +14,29 @@ const PORT = process.env.PORT || 3001;
 app.use(cors());
 app.use(express.json());
 
-// Configuração Multer: Aceita até 5 ficheiros (PDF ou Imagens)
+// Rate limiter configurado FORA da rota (correto)
+const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutos
+    max: 20,
+    message: "Muitas solicitações vindas deste IP, tente novamente após 15 minutos."
+});
+app.use("/api/validar", limiter);
+
+// Configuração Multer
 const storage = multer.memoryStorage();
 const upload = multer({ 
     storage: storage,
-    limits: { fileSize: 10 * 1024 * 1024 } // Limite de 10MB por ficheiro
+    limits: { fileSize: 10 * 1024 * 1024 } // 10MB por arquivo
 });
 
 // Inicialização da Google Generative AI
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+
+// Inicialização do Supabase
+const supabase = createClient(
+    process.env.SUPABASE_URL,
+    process.env.SUPABASE_ANON_KEY
+);
 
 app.post('/api/validar', upload.array('arquivos', 5), async (req, res) => {
     try {
@@ -30,22 +46,13 @@ app.post('/api/validar', upload.array('arquivos', 5), async (req, res) => {
 
         console.log(`Recebidos ${req.files.length} ficheiros para análise.`);
 
-        // Instancia o modelo Gemini 3 Flash
-         // Instancia o modelo Gemini 3 Flash
+        // Instancia o modelo Gemini
         const model = genAI.getGenerativeModel(
-        { model: "gemini-3-flash-preview" },
-        { apiVersion: "v1beta" }
+            { model: "gemini-2.0-flash" }, // modelo estável
+            { apiVersion: "v1beta" }
         );
 
-        // ANTES do app.post(...)
-        const limiter = rateLimit({
-        windowMs: 15 * 60 * 1000,
-        max: 20,
-        message: "Muitas solicitações..."
-        });
-        app.use("/api/validar", limiter); // aplica na rota correta
-
-        // Converte todos os ficheiros para o formato que a IA entende
+        // Converte arquivos para o formato da IA
         const imageParts = req.files.map(file => ({
             inlineData: {
                 data: file.buffer.toString('base64'),
@@ -53,7 +60,7 @@ app.post('/api/validar', upload.array('arquivos', 5), async (req, res) => {
             },
         }));
 
-        // Super Prompt de Auditoria e Cruzamento de Dados
+        // Prompt de Auditoria
         const prompt = `
             Você é um Auditor de Sinistros Sênior da Suhai Seguradora. Sua missão é validar um kit de documentos de terceiros com tolerância zero para campos obrigatórios vazios.
 
@@ -89,14 +96,43 @@ app.post('/api/validar', upload.array('arquivos', 5), async (req, res) => {
             Analise os documentos anexados e retorne apenas o JSON.
         `;
 
-        // Chama a IA enviando o prompt e a lista de documentos
+        // Chama a IA
         const result = await model.generateContent([prompt, ...imageParts]);
         const response = await result.response;
         const text = response.text();
 
-        // Limpeza de segurança para garantir que o JSON seja lido corretamente
+        // Limpa e parseia o JSON
         const cleanJson = text.replace(/```json|```/g, "").trim();
         const resultadoFinal = JSON.parse(cleanJson);
+
+        // ✅ PASSO 5: Se PENDENTE, registra no Supabase automaticamente
+        if (resultadoFinal.status_geral === 'PENDENTE') {
+            const docsFaltando = [];
+
+            if (!resultadoFinal.checklist?.match_titularidade)
+                docsFaltando.push('Titularidade divergente entre documentos');
+            if (!resultadoFinal.checklist?.assinatura_conforme_valor)
+                docsFaltando.push('Assinatura incorreta para o valor da indenização');
+            if (!resultadoFinal.checklist?.preenchimento_integral)
+                docsFaltando.push('Campos obrigatórios vazios (placa, chassi ou valor)');
+            if (!resultadoFinal.checklist?.sinistro_consistente)
+                docsFaltando.push('Número de sinistro divergente entre documentos');
+
+            const { error: supabaseError } = await supabase
+                .from('pendencias')
+                .insert({
+                    numero_sinistro: resultadoFinal.dados_extraidos?.numero_sinistro || 'N/A',
+                    documentos_faltantes: docsFaltando,
+                    status: 'aguardando',
+                    // telefone e email serão preenchidos manualmente no Supabase por enquanto
+                });
+
+            if (supabaseError) {
+                console.error('Erro ao salvar pendência no Supabase:', supabaseError.message);
+            } else {
+                console.log(`Pendência registrada no Supabase — Sinistro #${resultadoFinal.dados_extraidos?.numero_sinistro}`);
+            }
+        }
 
         console.log("Análise concluída com sucesso.");
         res.json(resultadoFinal);
