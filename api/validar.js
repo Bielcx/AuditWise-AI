@@ -12,6 +12,7 @@ const PORT = process.env.PORT || 3001;
 
 // Configurações de Middleware
 app.use(cors());
+app.set('trust proxy', 1);
 app.use(express.json());
 
 // Rate limiter configurado FORA da rota (correto)
