@@ -49,7 +49,7 @@ app.post('/api/validar', upload.array('arquivos', 5), async (req, res) => {
 
         // Instancia o modelo Gemini
         const model = genAI.getGenerativeModel(
-            { model: "gemini-2.5-flash-preview-04-17" },
+            { model: "gemini-1.5-flash" },
             { apiVersion: "v1beta" }
         );
 
