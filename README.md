@@ -1,5 +1,11 @@
 # AuditWise AI 🤖
 
+## 📸 Screenshots
+
+![Dashboard](assets/dashboard.png)
+![Resultado da Análise](assets/resultado.png)
+![Email de Cobrança](assets/email.png)
+
 > Sistema inteligente de auditoria de documentos com IA — analisa kits de documentos em segundos, identifica pendências automaticamente e dispara cobranças por email.
 
 ![Demo](https://img.shields.io/badge/status-live-brightgreen) ![Version](https://img.shields.io/badge/version-1.0.0-blue) ![License](https://img.shields.io/badge/license-MIT-green)
