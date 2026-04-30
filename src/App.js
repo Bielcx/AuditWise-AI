@@ -96,8 +96,8 @@ function App() {
   return (
     <div className="container">
       <header className="header">
-        <h1>Suhai <span>Auditor Pro</span></h1>
-        <p>Dashboard de Compliance e Indicadores Operacionais</p>
+        <h1>Audit <span>Wise AI</span></h1>
+        <p>Sistema Inteligente de Auditoria de Documentos</p>
       </header>
 
       {/* Seção de KPIs */}
