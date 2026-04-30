@@ -1,7 +1,8 @@
 const { executarCobrancas } = require('./cobrancas');
 
+// Handler do Cron Job da Vercel — chamado automaticamente todo dia às 9h
 module.exports = async (req, res) => {
-    // Segurança: só aceita chamada da própria Vercel
+    // Segurança: só aceita chamadas autorizadas
     const authHeader = req.headers['authorization'];
     if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
         return res.status(401).json({ error: 'Não autorizado' });

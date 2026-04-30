@@ -14,17 +14,17 @@ const supabase = createClient(
 // TEMPLATES DE EMAIL
 // ========================
 function montarEmail(pendencia, diaCobranca) {
+    const sinistro = pendencia.numero_sinistro;
+
     const docsHtml = pendencia.documentos_faltantes
         .map(doc => `<li style="margin-bottom:6px;">❌ ${doc}</li>`)
         .join('');
 
-    const sinistro = pendencia.numero_sinistro;
-
     const mensagens = {
         assunto: {
-            1: `[Suhai] Pendência no sinistro #${sinistro} — Documentos necessários`,
-            2: `[Suhai] ⚠️ Lembrete — Sinistro #${sinistro} ainda com pendências`,
-            3: `[Suhai] 🚨 URGENTE — Prazo vencendo — Sinistro #${sinistro}`,
+            1: `[AuditWise] Pendência no sinistro #${sinistro} — Documentos necessários`,
+            2: `[AuditWise] ⚠️ Lembrete — Sinistro #${sinistro} ainda com pendências`,
+            3: `[AuditWise] 🚨 URGENTE — Prazo vencendo — Sinistro #${sinistro}`,
         },
         titulo: {
             1: 'Documentos Pendentes',
@@ -52,22 +52,19 @@ function montarEmail(pendencia, diaCobranca) {
         <tr><td align="center">
           <table width="600" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
             
-            <!-- Header -->
             <tr>
               <td style="background:${mensagens.cor[diaCobranca]};padding:28px 32px;">
-                <h1 style="margin:0;color:#fff;font-size:22px;">Suhai Seguradora</h1>
+                <h1 style="margin:0;color:#fff;font-size:22px;">AuditWise AI</h1>
                 <p style="margin:6px 0 0;color:rgba(255,255,255,0.85);font-size:14px;">${mensagens.titulo[diaCobranca]}</p>
               </td>
             </tr>
 
-            <!-- Body -->
             <tr>
               <td style="padding:32px;">
                 <p style="color:#1E293B;font-size:15px;line-height:1.6;margin-top:0;">
                   ${mensagens.intro[diaCobranca]}
                 </p>
 
-                <!-- Documentos faltando -->
                 <div style="background:#FEF2F2;border-left:4px solid #EF4444;border-radius:6px;padding:16px 20px;margin:20px 0;">
                   <p style="margin:0 0 10px;font-weight:bold;color:#991B1B;font-size:14px;">Documentos necessários:</p>
                   <ul style="margin:0;padding-left:20px;color:#7F1D1D;font-size:14px;line-height:1.7;">
@@ -79,23 +76,21 @@ function montarEmail(pendencia, diaCobranca) {
                   Por favor, envie os documentos respondendo este email ou entre em contato com o auditor responsável pelo seu processo.
                 </p>
 
-                <!-- Número do sinistro -->
                 <div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:6px;padding:14px 18px;margin:20px 0;">
                   <p style="margin:0;color:#64748B;font-size:13px;">Número do sinistro</p>
                   <p style="margin:4px 0 0;color:#0F172A;font-size:18px;font-weight:bold;">#${sinistro}</p>
                 </div>
 
                 <p style="color:#94A3B8;font-size:12px;margin-bottom:0;">
-                  Em caso de dúvidas, responda este email ou entre em contato com a Suhai Seguradora.
+                  Em caso de dúvidas, responda este email ou entre em contato com o auditor responsável.
                 </p>
               </td>
             </tr>
 
-            <!-- Footer -->
             <tr>
               <td style="background:#F8FAFC;padding:18px 32px;border-top:1px solid #E2E8F0;">
                 <p style="margin:0;color:#94A3B8;font-size:12px;text-align:center;">
-                  Suhai Seguradora · Sistema AuditWise AI · Este é um email automático
+                  AuditWise AI · Sistema de Auditoria · Este é um email automático
                 </p>
               </td>
             </tr>
@@ -129,7 +124,8 @@ function montarEmailAuditor(pendencia) {
           <h2 style="margin:0;">⚠️ Intervenção Manual Necessária</h2>
         </div>
         <p style="color:#1E293B;font-size:15px;">
-          O sinistro <strong>#${pendencia.numero_sinistro}</strong> passou por <strong>${pendencia.cobrancas_enviadas} cobranças automáticas</strong> sem resposta do terceiro.
+          O sinistro <strong>#${pendencia.numero_sinistro}</strong> passou por 
+          <strong>${pendencia.cobrancas_enviadas} cobranças automáticas</strong> sem resposta do terceiro.
         </p>
         <table style="width:100%;border-collapse:collapse;margin:16px 0;">
           <tr style="background:#F8FAFC;">
@@ -191,9 +187,8 @@ async function executarCobrancas() {
     for (const pendencia of pendencias) {
         const diaCobranca = pendencia.cobrancas_enviadas + 1;
 
-        // Dia 4+: escalona para o auditor
+        // Dia 4+: escala para o auditor
         if (diaCobranca > 3) {
-            // Notifica o auditor
             await resend.emails.send({
                 from: process.env.EMAIL_REMETENTE,
                 to: process.env.EMAIL_AUDITOR,
@@ -201,17 +196,16 @@ async function executarCobrancas() {
                 html: montarEmailAuditor(pendencia)
             });
 
-            // Atualiza status para escalado
             await supabase
                 .from('pendencias')
                 .update({ status: 'escalado', atualizado_em: new Date() })
                 .eq('id', pendencia.id);
 
-            console.log(`Sinistro #${pendencia.numero_sinistro} → ESCALADO (auditor notificado)`);
+            console.log(`Sinistro #${pendencia.numero_sinistro} → ESCALADO`);
             continue;
         }
 
-        // Envia cobrança para o terceiro (só se tiver email)
+        // Envia cobrança por email (só se tiver email cadastrado)
         if (pendencia.email_terceiro) {
             const { assunto, html } = montarEmail(pendencia, diaCobranca);
 
@@ -235,7 +229,7 @@ async function executarCobrancas() {
             });
         }
 
-        // Atualiza contador de cobranças
+        // Atualiza contador
         await supabase
             .from('pendencias')
             .update({
@@ -251,13 +245,12 @@ async function executarCobrancas() {
 }
 
 // ========================
-// AGENDADOR — Todo dia às 9h
+// AGENDADOR — Todo dia às 9h (horário de Brasília)
 // ========================
 cron.schedule('0 9 * * *', executarCobrancas, {
     timezone: 'America/Sao_Paulo'
 });
 
-console.log('Sistema de cobranças automáticas iniciado — rodará todo dia às 9h (horário de Brasília)');
+console.log('Sistema de cobranças iniciado — rodará todo dia às 9h (Brasília)');
 
-// Exporta para testes manuais
 module.exports = { executarCobrancas };

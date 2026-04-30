@@ -1,6 +1,6 @@
 {
-  "name": "sinistro-client",
-  "version": "0.1.0",
+  "name": "auditwise-ai",
+  "version": "1.0.0",
   "private": true,
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
@@ -17,7 +17,6 @@
     "jspdf": "^4.2.1",
     "multer": "^2.1.1",
     "node-cron": "^4.2.1",
-    "nodemailer": "^8.0.7",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
     "react-scripts": "5.0.1",
