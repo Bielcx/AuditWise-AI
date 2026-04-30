@@ -1,70 +1,254 @@
-# Getting Started with Create React App
+# AuditWise AI 🤖
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+> Sistema inteligente de auditoria de documentos com IA — analisa kits de documentos em segundos, identifica pendências automaticamente e dispara cobranças por email.
 
-## Available Scripts
+![Demo](https://img.shields.io/badge/status-live-brightgreen) ![Version](https://img.shields.io/badge/version-1.0.0-blue) ![License](https://img.shields.io/badge/license-MIT-green)
 
-In the project directory, you can run:
+**[🚀 Ver projeto ao vivo](https://audit-wise-ai.vercel.app)**
 
-### `npm start`
+---
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+## 📋 Sobre o Projeto
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+O **AuditWise AI** nasceu de uma necessidade real: automatizar a auditoria manual de kits de documentos de sinistros que chegavam diariamente via WhatsApp.
 
-### `npm test`
+Antes, cada kit era verificado manualmente — conferindo titularidade, assinaturas, campos obrigatórios e regras específicas por faixa de valor. Um processo que consumia horas por dia.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+Com o AuditWise AI, o mesmo processo acontece em **menos de 30 segundos**, com laudo técnico detalhado e cobrança automática para quem tiver pendências.
 
-### `npm run build`
+---
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## ✨ Funcionalidades
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+- 📄 **Análise com IA** — Upload de múltiplos documentos (PDF/imagens) e análise automática com Google Gemini
+- ✅ **Checklist automático** — Valida titularidade, assinaturas, campos obrigatórios e consistência do sinistro
+- 📊 **Dashboard de KPIs** — Taxa de aprovação, principais pendências e histórico de análises
+- 📧 **Cobranças automáticas** — Emails profissionais disparados automaticamente para quem tem documentos pendentes
+- ⏰ **Agendador diário** — Cron job que roda todo dia às 9h cobrando pendências automaticamente
+- 📋 **Laudo em PDF** — Export automático do parecer técnico em PDF profissional
+- 🗄️ **Registro no banco** — Toda pendência registrada automaticamente no Supabase com histórico completo
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+---
 
-### `npm run eject`
+## 🔄 Fluxo do Sistema
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+```
+Usuário envia documentos (PDF/Imagens)
+            ↓
+     IA analisa o kit completo
+            ↓
+    ┌───────┴───────┐
+ APROVADO        PENDENTE
+    ↓                ↓
+ Laudo PDF    Registra no banco
+ gerado       + lista pendências
+                     ↓
+          Email automático ao terceiro
+                     ↓
+          Cobrança diária às 9h até
+          regularizar (máx. 3 dias)
+                     ↓
+          Auditor notificado para
+          intervenção manual
+```
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+---
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+## 🛠️ Tecnologias
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+### Frontend
+- **React 19** — Interface do usuário
+- **Recharts** — Gráficos do dashboard
+- **jsPDF** — Geração de laudos em PDF
+- **Axios** — Comunicação com a API
 
-## Learn More
+### Backend
+- **Node.js + Express** — Servidor da API
+- **Multer** — Upload de múltiplos arquivos
+- **Google Gemini AI** — Análise inteligente de documentos
+- **Supabase** — Banco de dados e armazenamento
+- **Resend** — Disparo de emails transacionais
+- **node-cron** — Agendamento de cobranças automáticas
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+### Infraestrutura
+- **Vercel** — Deploy do frontend e serverless functions
+- **Vercel Cron Jobs** — Agendador em produção
+- **Railway** — Servidor para Evolution API (WhatsApp)
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+---
 
-### Code Splitting
+## 🚀 Como Rodar Localmente
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+### Pré-requisitos
+- Node.js 18+
+- Conta no [Google AI Studio](https://aistudio.google.com) (chave Gemini)
+- Conta no [Supabase](https://supabase.com)
+- Conta no [Resend](https://resend.com)
 
-### Analyzing the Bundle Size
+### Instalação
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+```bash
+# Clone o repositório
+git clone https://github.com/Bielcx/AuditWise-AI.git
+cd AuditWise-AI
 
-### Making a Progressive Web App
+# Instale as dependências
+npm install
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+### Configuração
 
-### Advanced Configuration
+Crie um arquivo `.env` na raiz do projeto:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+```env
+GEMINI_API_KEY=sua_chave_gemini
+SUPABASE_URL=sua_url_supabase
+SUPABASE_ANON_KEY=sua_chave_supabase
+RESEND_API_KEY=sua_chave_resend
+EMAIL_REMETENTE=onboarding@resend.dev
+EMAIL_AUDITOR=seu_email@exemplo.com
+CRON_SECRET=sua_senha_secreta
+```
 
-### Deployment
+### Banco de dados
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+Execute no **SQL Editor** do Supabase:
 
-### `npm run build` fails to minify
+```sql
+CREATE TABLE pendencias (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  numero_sinistro TEXT NOT NULL,
+  telefone_terceiro TEXT,
+  email_terceiro TEXT,
+  documentos_faltantes TEXT[] NOT NULL,
+  cobrancas_enviadas INTEGER DEFAULT 0,
+  status TEXT DEFAULT 'aguardando',
+  criado_em TIMESTAMP DEFAULT NOW(),
+  atualizado_em TIMESTAMP DEFAULT NOW()
+);
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+CREATE TABLE log_cobrancas (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  pendencia_id UUID REFERENCES pendencias(id),
+  canal TEXT,
+  mensagem TEXT,
+  enviado_em TIMESTAMP DEFAULT NOW()
+);
+```
+
+### Rodando o projeto
+
+```bash
+# Terminal 1 — Backend (porta 3001)
+npm run server
+
+# Terminal 2 — Frontend (porta 3000)
+npm start
+```
+
+Acesse **http://localhost:3000**
+
+---
+
+## 📁 Estrutura do Projeto
+
+```
+AuditWise-AI/
+├── api/
+│   ├── validar.js          # Endpoint de análise com IA
+│   ├── cobrancas.js        # Sistema de cobranças automáticas
+│   └── cron-cobrancas.js   # Handler do cron job Vercel
+├── src/
+│   ├── App.js              # Componente principal React
+│   ├── App.css             # Estilos do dashboard
+│   └── index.js            # Entry point
+├── .env.example            # Variáveis de ambiente necessárias
+├── vercel.json             # Configuração Vercel + Cron Jobs
+└── package.json
+```
+
+---
+
+## 🧠 Como a IA Analisa os Documentos
+
+O sistema usa o **Google Gemini** com um prompt especializado que verifica:
+
+| Regra | Descrição |
+|---|---|
+| **Titularidade** | Nome idêntico no CRLV, CNH, Formulário e Termo |
+| **Consistência** | Número do sinistro igual em todos os documentos |
+| **Assinatura até R$10k** | Aceita assinatura manuscrita |
+| **Assinatura R$10k-20k** | Obrigatório assinatura digital GOV.BR |
+| **Assinatura acima R$20k** | Obrigatório reconhecimento de firma em cartório |
+| **Campos obrigatórios** | Placa, chassi, valor e favorecido preenchidos |
+
+---
+
+## 📧 Sistema de Cobranças Automáticas
+
+Quando um kit vem com pendências, o sistema:
+
+| Dia | Ação |
+|---|---|
+| **Dia 1** | Email amigável listando documentos faltantes |
+| **Dia 2** | Email de lembrete com tom de urgência |
+| **Dia 3** | Email de aviso de suspensão do processo |
+| **Dia 4+** | Auditor notificado para intervenção manual |
+
+---
+
+## 🌐 Deploy
+
+O projeto está configurado para deploy automático na **Vercel**:
+
+```bash
+# Após configurar as variáveis de ambiente na Vercel
+git push origin main
+# Deploy automático via GitHub integration
+```
+
+### Variáveis necessárias na Vercel
+Configure em **Settings → Environment Variables**:
+- `GEMINI_API_KEY`
+- `SUPABASE_URL`
+- `SUPABASE_ANON_KEY`
+- `RESEND_API_KEY`
+- `EMAIL_REMETENTE`
+- `EMAIL_AUDITOR`
+- `CRON_SECRET`
+
+---
+
+## 📈 Resultados
+
+| Métrica | Antes | Depois |
+|---|---|---|
+| Tempo por kit | ~15 minutos | ~30 segundos |
+| Cobranças manuais | Diárias por telefone/email | Automáticas às 9h |
+| Registro de pendências | Planilha manual | Banco de dados automático |
+| Laudo técnico | Não existia | PDF gerado automaticamente |
+
+---
+
+## 🔮 Próximas Funcionalidades
+
+- [ ] Bot WhatsApp para recebimento automático de documentos
+- [ ] Integração com sistema i4Pro via RPA
+- [ ] Dashboard gerencial com relatórios mensais
+- [ ] Autenticação e controle de acesso por usuário
+- [ ] Notificações por WhatsApp além de email
+
+---
+
+## 👨‍💻 Autor
+
+Desenvolvido por **Gabriel (Biel)**
+
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=flat&logo=linkedin&logoColor=white)](https://linkedin.com/in/seu-perfil)
+[![GitHub](https://img.shields.io/badge/GitHub-100000?style=flat&logo=github&logoColor=white)](https://github.com/Bielcx)
+
+---
+
+## 📄 Licença
+
+Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
